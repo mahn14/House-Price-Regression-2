@@ -45,9 +45,9 @@ def get_cols(df, frac=0.1):
 def drop_outliers(df):
     ''' Returns Pandas DataFrame without 2 possible outliers
     '''
-    train = pd.read_csv('Data/Raw/train.csv')
-    outliers = np.sort(train['SalePrice'])[-2:]
-    new_train = train[train['SalePrice'] < np.min(outliers)].reset_index(drop=True)
+
+    outliers = np.sort(df['SalePrice'])[-2:]
+    new_train = df[df['SalePrice'] < np.min(outliers)].reset_index(drop=True)
     
     return(new_train)
 
@@ -134,9 +134,12 @@ def impute_others(df):
     df['SaleType'] = df['SaleType'].fillna('WD')
     df['Utilities'] = df['Utilities'].fillna('AllPub')
 
-    df['LotFrontage'] = df['LotFrontage'].fillna(60)
     df['MasVnrArea'] = df['MasVnrArea'].fillna(0)
 
+    try:
+        df['LotFrontage'] = df['LotFrontage'].fillna(60)
+    except:
+        pass 
     return(df)
 
     
@@ -153,10 +156,11 @@ def impute_df(df):
 ####################################################################################################
 
 
-def preprocess(filepath, frac, outliers):
+def preprocess(filepath, frac=0.2, outliers=False):
     # Get DataFrame
     train, test = drop_data(filepath, frac=frac, outliers=outliers)
+    y = train['SalePrice']
     df_full = pd.concat([train.drop('SalePrice', axis=1), test], axis=0)
     df_full = impute_df(df_full)
 
-    return(df_full)
+    return(df_full, y)
