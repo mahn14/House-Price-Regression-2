@@ -107,9 +107,10 @@ def impute_garage(df):
     # Single missing values
     df['GarageCars'].fillna(0, inplace=True)
     df['GarageArea'].fillna(0, inplace=True)
+    df['GarageYrBlt'].fillna(0, inplace=True)
     
     # Many missing values
-    features_garage2 = ['GarageType', 'GarageCond', 'GarageYrBlt', 'GarageFinish', 'GarageQual']
+    features_garage2 = ['GarageType', 'GarageCond', 'GarageFinish', 'GarageQual']
     df[features_garage2] = df[features_garage2].fillna('None')
     
     return(df)
@@ -124,20 +125,28 @@ def impute_bsmt(df):
 
 
 def impute_others(df):
-    df['Electrical'] = df['Electrical'].fillna('None')
-    df['Exterior1st'] = df['Exterior1st'].fillna('VinylSd')
-    df['Exterior2nd'] = df['Exterior2nd'].fillna('VinylSd')
+    
     df['Functional'] = df['Functional'].fillna('Typ')
     df['KitchenQual'] = df['KitchenQual'].fillna('TA')
-    df['MSZoning'] = df['MSZoning'].fillna('RL')
+    
+    
+    
+    df['MSZoning'] = df['MSZoning'].fillna(df['MSZoning'].mode()[0])
+    df['Electrical'] = df['Electrical'].fillna(df['Electrical'].mode()[0])
+    df['Exterior1st'] = df['Exterior1st'].fillna(df['Exterior1st'].mode()[0])
+    df['Exterior2nd'] = df['Exterior2nd'].fillna(df['Exterior2nd'].mode()[0])
+    df['SaleType'] = df['SaleType'].fillna(df['SaleType'].mode()[0])
+    
+    df['MSSubClass'] = df['MSSubClass'].fillna('None')
     df['MasVnrType'] = df['MasVnrType'].fillna('None')
-    df['SaleType'] = df['SaleType'].fillna('WD')
-    df['Utilities'] = df['Utilities'].fillna('AllPub')
-
     df['MasVnrArea'] = df['MasVnrArea'].fillna(0)
 
+ 
+    df = df.drop(['Utilities'], axis=1) 
+    
+    
     try:
-        df['LotFrontage'] = df['LotFrontage'].fillna(60)
+        df['LotFrontage'] = df.groupby('Neighborhood')['LotFrontage'].transform(lambda x: x.fillna(x.median()))
     except:
         pass 
     return(df)
